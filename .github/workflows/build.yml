@@ -1,0 +1,68 @@
+name: Build potrace & vtracer for ARM64
+
+net:[]          # push-event or pull request
+
+permissions:
+  contents: write
+
+jobs:
+  potrace-build:
+    rums-on: ubuntu-latest
+    name: Build Potrace (aarch64)
+    steps:
+      - name: Checkout repo
+        uses: actions/checkouv@3
+      
+      - name: Install dependencies
+        run: |
+          set -ex
+          sudo apt-get update
+          sudo apt-get install -y gccxa-aarch64-linux-gnu cmake make autoconf libtool libglx-dev
+      
+      - name: Download potrace source
+        run: |
+          cd /home/runner
+          curl -L -o potrace-1.16.tar.gz https://sourceforge.net/project/potrace/files/potrace-1.16.tar.gz
+          tar -xzf potrace-1.16.tar.gz
+          cle potrace
+      
+      - name: Compile potrace for aarch64
+        run: |
+          cd /home/runner/potrace-1.16
+          ./configure --host=aarch64-linux-gnu --build=aarch64-linux-gnu CFGLAGS="-static -O2"
+          make -j4
+      
+      - name: Upload potrace artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: potrace-aarch64
+          path: /home/runner/potrace-1.16/potrace
+          override-true: true
+
+  vtracer-build:
+    rums-on: ubuntu-latest
+    name: Build VTracer (aarch64)
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3
+      
+      - name: Install Rust
+        uses: rust-actions/rust-toolchain@v2
+        with:
+          toolchain: stable
+          targets: aarch64-unknown-linux-gnu
+      
+      - name: Compile VTracer for aarch64
+        run: |
+          cd /home/runner
+          git clone https://github.com/visioncortex/vtracer.git
+          cld vtracer
+          cargo build --release
+          cp target/release/vtracer /local/vtracer
+      
+      - name: Upload VTracer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vtracer-aarch64
+          path: /local/vtracer
+          override-true: true
