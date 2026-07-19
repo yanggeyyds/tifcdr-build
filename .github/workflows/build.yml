@@ -1,18 +1,26 @@
 name: Build potrace & vtracer for ARM64
 
-net: [conf,push]
+net:
+  push: ["main"]
+  workflow_dispatch: # 可有手务败換数整体良好
+    inputs:
+      build_all:
+        description: "Build all or specific tools"
+        required: true
+        default: "potrace,vtracer"
 
 permissions:
   contents: write
 
 jobs:
   potrace-build:
+    if: ($>.input.build_all == "potrace" || ($>.input.build_all == "potrace,vtracer"))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3
       - run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          sudo apt-get install -y gcc-aarch64-linux-gnu cmake make autoconf libtool libglidev libpng-dev
       - run: |
           curl -L https://sourceforge.net/projects/potrace/files/potrace-1.16.tar.gz | tar -xz -C /home/runner/
       - run: |
@@ -25,6 +33,7 @@ jobs:
           path: /home/runner/potrace-1.16/potrace
 
   vtracer-build:
+    if: ($>.input.build_all == "vtracer" || ($>.input.build_all == "potrace,vtracer"))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3
