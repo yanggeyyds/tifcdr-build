@@ -1,8 +1,8 @@
 name: Build potrace & vtracer for ARM64
 
-net:
+on:
   push: ["main"]
-  workflow_dispatch: # 可有手务败換数整体良好
+  workflow_dispatch:
     inputs:
       build_all:
         description: "Build all or specific tools"
@@ -14,13 +14,13 @@ permissions:
 
 jobs:
   potrace-build:
-    if: ($>.input.build_all == "potrace" || ($>.input.build_all == "potrace,vtracer"))
+    if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.build_all == 'potrace' || github.event.inputs.build_all == 'potrace,vtracer') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3
       - run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu cmake make autoconf libtool libglidev libpng-dev
+          sudo apt-get install -y gcc-aarch64-linux-gnu cmake make autoconf libtool
       - run: |
           curl -L https://sourceforge.net/projects/potrace/files/potrace-1.16.tar.gz | tar -xz -C /home/runner/
       - run: |
@@ -33,7 +33,7 @@ jobs:
           path: /home/runner/potrace-1.16/potrace
 
   vtracer-build:
-    if: ($>.input.build_all == "vtracer" || ($>.input.build_all == "potrace,vtracer"))
+    if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.build_all == 'vtracer' || github.event.inputs.build_all == 'potrace,vtracer') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3
