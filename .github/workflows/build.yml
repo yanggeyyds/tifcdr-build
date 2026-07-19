@@ -19,10 +19,13 @@ jobs:
           cd /home/runner/potrace-1.16
           ./configure --host=aarch64-linux-gnu --disable-zlib
           make -j$(nproc)
+      - run: ls -la /home/runner/potrace-1.16/src/potrace 2>/dev/null || ls -la /home/runner/potrace-1.16/potrace 2>/dev/null
       - uses: actions/upload-artifact@v4
         with:
           name: potrace
-          path: /home/runner/potrace-1.16/potrace
+          path: |
+            /home/runner/potrace-1.16/src/potrace
+            /home/runner/potrace-1.16/potrace
 
   vtracer-build:
     runs-on: ubuntu-latest
