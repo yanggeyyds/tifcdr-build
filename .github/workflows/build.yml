@@ -1,0 +1,44 @@
+name: Build potrace & vtracer for ARM64
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  potrace-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu cmake make autoconf libtool
+      - run: |
+          curl -L https://sourceforge.net/projects/potrace/files/potrace-1.16.tar.gz | tar -xz -C /home/runner/
+          cd /home/runner/potrace-1.16
+          ./configure --host=aarch64-linux-gnu
+          make -j$(nproc)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: potrace
+          path: /home/runner/potrace-1.16/potrace
+
+  vtracer-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkouv@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+      - run: |
+          git clone https://github.com/visioncortex/vtracer.git /home/runner/vtracer
+          cd /home/runner/vtracer
+          cargo build --release --target aarch64-unknown-linux-gnu
+          cp target/aarch64-unknown-linux-gnu/release/vtracer /home/runner/vtracer-aarch64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vtracer-aarch64
+          path: /home/runner/vtracer-aarch64
